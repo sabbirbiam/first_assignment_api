@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Registration as ModelsRegistration;
+use App\User;
 
 class Stories extends Model
 {
@@ -22,7 +23,7 @@ class Stories extends Model
 
     public function user()
     {
-        return $this->belongsTo(ModelsRegistration::class);
+        return $this->belongsTo(User::class);
     }
 
     public function comment()

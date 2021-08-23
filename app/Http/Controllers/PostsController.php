@@ -36,22 +36,15 @@ class PostsController extends Controller
      */
     public function store(CreateCommentRequest $request)
     {
-        //
-        // return $request;
-
-        if (!($request->session()->has('register')) && $request->session()->get('register')->id) {
-            return "stop no session";
-        }
 
         $data['comments'] = $request->comments ?? "";
         $data['user_id'] = $request->user_id ?? null;
         $data['story_id'] = $request->story_id ?? null;
-        $data['user_id'] = $request->session()->get('register')->id ?? null;
+        $data['user_id'] = $request->user_id ?? null;;
 
 
         $success = Posts::create($data);
-        return redirect('/user/stories');
-
+        // return redirect('/user/stories');
 
         if ($success) {
             return response()->json(array(
@@ -115,7 +108,7 @@ class PostsController extends Controller
 
         $posts->comment = $request->name ?? $posts->comment;
         $posts->user_id = $request->user_id ?? $posts->user_id;
-        $posts->story_id = $request->story_id ?? $posts->story_id; 
+        $posts->story_id = $request->story_id ?? $posts->story_id;
         $posts->save();
 
         $response = [
@@ -142,29 +135,28 @@ class PostsController extends Controller
         //
         $posts = Posts::find($id)->delete();
 
-        return redirect('/stories');
 
-        // if (!$posts) {
-        //     $response = [
-        //         'code' => 400,
-        //         'status' => 'failed',
-        //         'message' => 'Delete unsuccessful'
-        //     ];
+        if (!$posts) {
+            $response = [
+                'code' => 400,
+                'status' => 'failed',
+                'message' => 'Delete unsuccessful'
+            ];
 
-        //     return response()->json([
-        //         'response' => $response
-        //     ], 400);
-        // }
+            return response()->json([
+                'response' => $response
+            ], 400);
+        }
 
-        // $response = [
-        //     'code' => 200,
-        //     'status' => 'success',
-        //     'message' => 'Deleted successfully'
-        // ];
+        $response = [
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'Deleted successfully'
+        ];
 
-        // return response()->json([
-        //     'response' => $response
-        // ], 200);
+        return response()->json([
+            'response' => $response
+        ], 200);
     }
 
     public function postDeleteByUser($id)

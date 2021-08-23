@@ -24,12 +24,14 @@ class CreateStoryRequest extends FormRequest
     {
         return [
             'title' => 'required|max:50', 
+            'user_id' => 'required', 
         ];
     }
 
     public function messages(){
         return [
             'title.required'=> '**Title is required**', 
+            'user_id.required'=> '**User Id is required**', 
             ];
     }
 }

@@ -53,22 +53,39 @@ class AdminController extends Controller
 
     public function userinfo()
     {
-        $userlist = DB::table('registration')
-            ->where('type', '=', 'user')
+        // return 600;
+        $userlist = DB::table('users')
             ->get();
 
-        // return $userlist;
-        return view('admin.userinfo')
-            ->with('userlist', $userlist);
+        if ($userlist) {
+            $response = [
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Data available'
+            ];
+
+            return response()->json([
+                'data' => $userlist,
+                'response' => $response
+            ], 200);
+        } else {
+            $response = [
+                'code' => 400,
+                'status' => 'success',
+                'message' => 'Data Not Found'
+            ];
+
+            return response()->json([
+                'data' => $userlist,
+                'response' => $response
+            ], 200);
+        }
     }
 
     public function userStatus($id)
     {
-        // return $request;
-        // return $id;
 
-
-        $stroy = DB::table('registration')
+        $stroy = DB::table('users')
             ->where('id', $id)
             ->first();
 
@@ -79,35 +96,54 @@ class AdminController extends Controller
             $data['status'] = 0;
         }
 
-        DB::table('registration')
+        DB::table('users')
             ->where('id', $id)
             ->update($data);
 
-        return redirect('/userInfo');
+        if (!$stroy) {
+            $response = [
+                'code' => 400,
+                'status' => 'failed',
+                'message' => 'Update unsuccessful'
+            ];
+
+            return response()->json([
+                'response' => $response
+            ], 400);
+        }
+
+        $response = [
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'Update successfully'
+        ];
+
+        return response()->json([
+            'response' => $response
+        ], 200);
     }
 
     public function create()
     {
-    	return view('home.create');
+        return view('home.create');
     }
 
-     public function store(CreateUserRequest $request)
+    public function store(CreateUserRequest $request)
     {
         // return $request;
-    	$params = [
-    		'name' => $request->name,
-    		'phone' => $request->phone,
-    		'email' => $request->email,
-    		'username' => $request->username,
-    		'password' => $request->password,
+        $params = [
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'username' => $request->username,
+            'password' => $request->password,
             'type' => $request->type ?? "admin",
             'status' => 1
 
-    	];
+        ];
 
-    	DB::table('registration')
-    		->insert($params);
-    	return redirect('/admin/home');
+        DB::table('registration')
+            ->insert($params);
+        return redirect('/admin/home');
     }
-
 }

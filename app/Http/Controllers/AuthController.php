@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateUserRequest;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -50,7 +51,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => 5 * 60,
+            'expires_in' => 50000 * 60,
             'user' => Auth::user()
         ]);
     }
@@ -58,6 +59,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         // return 300;
+        // return $request->dob;
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -72,13 +74,16 @@ class AuthController extends Controller
             'email' => $request->get('email'),
             'type' => $request->get('type') ?? "user",
             'username' => $request->get('username'),
+            // 'gender' => $request->get('gender') ?? null,
+            'dob' => $request->get('dob') ?? null,
+            'status' => 1,
             'deleted_at' => 1,
             'password' => Hash::make($request->get('password')),
         ]);
 
         $token = JWTAuth::fromUser($user);
 
-        return response()->json(compact('user', 'token'), 201);
+        return response()->json(compact('user', 'token'), 200);
     }
 
     public function getAuthenticatedUser()

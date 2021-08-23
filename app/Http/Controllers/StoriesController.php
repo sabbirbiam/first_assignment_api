@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateStoryRequest;
+use App\Models\Posts;
 use App\Models\Registration;
 use App\Models\Stories;
 use Illuminate\Http\Request;
@@ -21,8 +23,32 @@ class StoriesController extends Controller
         $stories = Stories::with(['user', 'comment'])
             ->orderBy('id', 'DESC')
             ->get();
-        return view('stories.index', ['stories' => $stories]);
-        // return response()->json($stories);
+        // return view('stories.index', ['stories' => $stories]);
+        if ($stories) {
+            $response = [
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Data available'
+            ];
+
+            return response()->json([
+                'data' => $stories,
+                'response' => $response
+            ], 200);
+        } else {
+            $response = [
+                'code' => 400,
+                'status' => 'success',
+                'message' => 'Data Not Found'
+            ];
+
+            return response()->json([
+                'data' => $stories,
+                'response' => $response
+            ], 200);
+        }
+
+        return response()->json($stories);
     }
 
     public function search(Request $request)
@@ -54,33 +80,17 @@ class StoriesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateStoryRequest $request)
     {
-        //
         // return $request;
-
-        if (!isset($request->user_id)) {
-            return response()->json(array(
-                'code' => 409,
-                'status' => 0,
-                'message' => 'User Id is mandatory'
-            ));
-        }
-
-        $user = Registration::where('id', $request->user_id)->first();
-
-        if (!isset($user->id)) {
-            return response()->json(array(
-                'code' => 409,
-                'status' => 0,
-                'message' => 'User Not Found'
-            ));
-        }
-
         $data['title'] = $request->title ?? "";
         $data['story'] = $request->story ?? "";
         $data['tags'] = $request->tags ?? "";
-        $data['user_id'] = $request->user_id ?? null;
+        $data['section'] = $request->section ?? "";
+        $data['storyimage'] = $request->storyimage ?? "";
+        $data['storycaption'] = $request->storycaption ?? "";
+        $data['blocked'] = 1;
+        $data['user_id'] = $request->user_id;
 
         $success = Stories::create($data);
 
@@ -153,31 +163,10 @@ class StoriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
 
-        // return $request;
-
-        $stories = Stories::find($id);
-
-        // if (!isset($request->user_id)) {
-        //     return response()->json(array(
-        //         'code' => 409,
-        //         'status' => 0,
-        //         'message' => 'User Id is mandatory'
-        //     ));
-        // }
-
-        // $user = Registration::where('id', $request->user_id)->first();
-
-        // if (!isset($user->id)) {
-        //     return response()->json(array(
-        //         'code' => 409,
-        //         'status' => 0,
-        //         'message' => 'User Not Found'
-        //     ));
-        // }
+        $stories = Stories::find($request->id);
 
         if (!$stories) {
             $response = [
@@ -194,7 +183,9 @@ class StoriesController extends Controller
         $stories->title = $request->title ?? $stories->title;
         $stories->story = $request->story ?? $stories->story;
         $stories->tags = $request->tags ?? $stories->tags;
-        $stories->user_id = $request->user_id ?? $stories->user_id;
+        $stories->storycaption = $request->storycaption ?? $stories->storycaption;
+        $stories->storyimage = $request->storyimage ?? $stories->storyimage;
+        // $stories->user_id = $request->user_id ?? $stories->user_id;
         $stories->save();
 
         $response = [
@@ -264,7 +255,27 @@ class StoriesController extends Controller
             ->where('id', $id)
             ->update($data);
 
-        return redirect('/stories');
+        if (!$stroy) {
+            $response = [
+                'code' => 400,
+                'status' => 'failed',
+                'message' => 'Update unsuccessful'
+            ];
+
+            return response()->json([
+                'response' => $response
+            ], 400);
+        }
+
+        $response = [
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'Update successfully'
+        ];
+
+        return response()->json([
+            'response' => $response
+        ], 200);
     }
 
     public function usersearch(Request $request)
@@ -281,5 +292,75 @@ class StoriesController extends Controller
             })->orderBy('id', 'DESC')->get();
         // return $stories;
         return view('user.stories', ['stories' => $stories]);
+    }
+
+    public function storiesDelete($id)
+    {
+        // return $id;
+
+        $posts =  Posts::where('story_id', $id)->get();
+        foreach ($posts as $child) {
+            $child->delete();
+        }
+        // return $posts;
+        $delete = Stories::find($id)->delete();
+
+        if (!$delete) {
+            $response = [
+                'code' => 400,
+                'status' => 'failed',
+                'message' => 'Delete unsuccessful'
+            ];
+
+            return response()->json([
+                'response' => $response
+            ], 400);
+        }
+
+        $response = [
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'Deleted successfully'
+        ];
+
+        return response()->json([
+            'response' => $response
+        ], 200);
+    }
+
+    public function userindex()
+    {
+        //
+        // return view('stories.index');
+        $stories = Stories::with(['user', 'comment'])
+            ->where('blocked', 1)
+            ->orderBy('id', 'DESC')
+            ->get();
+
+        if ($stories) {
+            $response = [
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Data available'
+            ];
+
+            return response()->json([
+                'data' => $stories,
+                'response' => $response
+            ], 200);
+        } else {
+            $response = [
+                'code' => 400,
+                'status' => 'success',
+                'message' => 'Data Not Found'
+            ];
+
+            return response()->json([
+                'data' => $stories,
+                'response' => $response
+            ], 200);
+        }
+
+        return response()->json($stories);
     }
 }
