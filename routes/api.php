@@ -21,12 +21,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::get('get-all', 'HomeController@index');
 Route::post('login', 'AuthController@login');
 Route::post('register', 'AuthController@register');
+Route::get('get-all-stories-home', 'StoriesController@userindex');
+
 
 Route::group(['middleware' => ['jwt.verify']], function() {
     Route::get('stories/get-all-stories', 'StoriesController@index');
     Route::get('stories/get-all-stories-user', 'StoriesController@userindex');
     Route::post('stories/create-stories', 'StoriesController@store');
     Route::post('stories/update-stories', 'StoriesController@update');
+    Route::post('stories/get-all-stories-search', 'StoriesController@storySearch');
 
     Route::post('stories/create-comments', 'PostsController@store');
     Route::delete('stories/delete-comment-by-id/{id}', 'PostsController@destroy');

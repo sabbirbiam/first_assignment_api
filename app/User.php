@@ -22,7 +22,6 @@
             'username',
             'type', 
             'phone',
-            'gender',
             'dob',
             'status',
             'deleted_at'

@@ -18,8 +18,10 @@ class AuthController extends Controller
     {
         // return $request;
         $credentials = $request->only('email', 'password');
-        $token = "";
+        // return $credentials;
+        // $token = "";
         $jwtToken =JWTAuth::attempt($credentials);
+        // return $jwtToken;
         // try {
         //     if (!$token = JWTAuth::attempt($credentials)) {
         //         return response()->json(['error' => 'invalid_credentials'], 400);
@@ -43,7 +45,7 @@ class AuthController extends Controller
         return $this->respondWithToken($jwtToken);
 
 
-        return response()->json(compact('token'));
+        // return response()->json(compact('token'));
     }
 
     protected function respondWithToken($token)
@@ -59,7 +61,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         // return 300;
-        // return $request->dob;
+        // return $request;
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -74,14 +76,16 @@ class AuthController extends Controller
             'email' => $request->get('email'),
             'type' => $request->get('type') ?? "user",
             'username' => $request->get('username'),
-            // 'gender' => $request->get('gender') ?? null,
+            'phone' => $request->get('phone') ?? null,
             'dob' => $request->get('dob') ?? null,
             'status' => 1,
             'deleted_at' => 1,
+            // 'password' => $request->get('password'),
             'password' => Hash::make($request->get('password')),
         ]);
 
         $token = JWTAuth::fromUser($user);
+        // $token = auth()->login($user);
 
         return response()->json(compact('user', 'token'), 200);
     }

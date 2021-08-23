@@ -294,6 +294,71 @@ class StoriesController extends Controller
         return view('user.stories', ['stories' => $stories]);
     }
 
+    public function storySearch(Request $request)
+    {
+        //
+        // return $request;
+        $stories = [];
+        if ($request->type == "user") {
+            $stories = Stories::with(['user', 'comment'])
+                ->where('blocked', 1)
+                ->where(function ($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->serchValue . '%')
+                        ->orWhere('story', 'like', '%' . $request->serchValue . '%')
+                        ->orWhere('section', 'like', '%' . $request->serchValue . '%')
+                        ->orWhere('tags', 'like', '%' . $request->serchValue . '%');
+                })->orderBy('id', 'DESC')->get();
+        }
+
+        if ($request->type == "admin") {
+            $stories = Stories::with(['user', 'comment'])
+                // ->where('blocked', 1)
+                ->where(function ($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->serchValue . '%')
+                        ->orWhere('story', 'like', '%' . $request->serchValue . '%')
+                        ->orWhere('section', 'like', '%' . $request->serchValue . '%')
+                        ->orWhere('tags', 'like', '%' . $request->serchValue . '%');
+                })->orderBy('id', 'DESC')->get();
+        }
+
+
+        if ($stories) {
+            $response = [
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Data available'
+            ];
+
+            return response()->json([
+                'data' => $stories,
+                'response' => $response
+            ], 200);
+        } else {
+            $response = [
+                'code' => 400,
+                'status' => 'success',
+                'message' => 'Data Not Found'
+            ];
+
+            return response()->json([
+                'data' => $stories,
+                'response' => $response
+            ], 200);
+        }
+
+        return response()->json($stories);
+        // $stories = Stories::with(['user', 'comment'])
+        //     ->where('blocked', 1)
+        //     ->where(function ($q) use ($request) {
+        //         $q->where('title', 'like', '%' . $request->title . '%')
+        //             ->orWhere('story', 'like', '%' . $request->story . '%')
+        //             ->orWhere('section', 'like', '%' . $request->section . '%')
+        //             ->orWhere('tags', 'like', '%' . $request->tags . '%');
+        //     })->orderBy('id', 'DESC')->get();
+        // return $stories;
+        // return view('user.stories', ['stories' => $stories]);
+    }
+
     public function storiesDelete($id)
     {
         // return $id;
